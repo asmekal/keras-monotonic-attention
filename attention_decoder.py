@@ -70,14 +70,25 @@ class AttentionDecoder(Recurrent):
         Implements an AttentionDecoder that takes in a sequence encoded by an
         encoder and outputs the decoded states
         :param units: dimension of the hidden state and the attention matrices
-        :param alphabet_size: the number of labels
-            (labels may contain <end_of_seq> but not need to have <start_of_seq>,
-            because it is added automatically)
-        :param attention_kind: one of 'monotonic', 'simple'
+        :param alphabet_size: output sequence alphabet size
+            (alphabet may contain <end_of_seq> but do not need to have <start_of_seq>,
+            because it is added internally inside the layer)
+        :param embedding_dim: size of internal embedding for output labels
+        :param is_monotonic: if True - Luong-style monotonic attention
+            if False - Bahdanau-style attention (non-monotonic)
+            See references for details
+        :param normalize_energy: whether attention weights are normalized
         references:
-            Bahdanau, Dzmitry, Kyunghyun Cho, and Yoshua Bengio.
+            (1) Bahdanau, Dzmitry, Kyunghyun Cho, and Yoshua Bengio.
             "Neural machine translation by jointly learning to align and translate."
             arXiv preprint arXiv:1409.0473 (2014).
+
+            (2) Colin Raffel, Minh-Thang Luong, Peter J. Liu, Ron J. Weiss, Douglass Eck
+            "Online and Linear-Time Attention by Enforcing Monotonic Alignments"
+            arXiv arXiv:1704.00784 (2017)
+        notes:
+            with `is_monotonic=True`, `normalize_energy=True` equal to model in (2)
+            with `is_monotonic=False`, `normalize_energy=False` equal to model in (1)
         """
         self.start_token = alphabet_size
         output_dim = alphabet_size  # alphabet + end_token

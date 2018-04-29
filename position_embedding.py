@@ -15,6 +15,13 @@ def pos_encoding(time, n_waves, d_model=100):
 class PositionEmbedding(Layer):
 
     def __init__(self, max_time=1000, n_waves=16, d_model=64, name='PositionEmbedding', **kwargs):
+        """
+        Position embedding via sin and cos functions
+        For incoming ``position`` produces embedding of dimension ``n_waves * 2``
+        ``embedding[2*i] = sin(positions / 10. ** (2. * i / d_model))``
+        ``embedding[2*i+1] = cos(positions / 10. ** (2. * i / d_model))``
+        :param max_time: maximum time dimension of input sequence
+        """
         self.max_time = max_time
         self.n_waves = n_waves
         self.d_model = d_model
