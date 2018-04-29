@@ -25,7 +25,7 @@ nnet = concatenate([embedded, pos_emb], axis=-1)
 
 attention_decoder = AttentionDecoder(20, n_labels,
                                      embedding_dim=5,
-                                     is_monotonic=True,
+                                     is_monotonic=False,
                                      normalize_energy=False)
 # use teacher forcing
 #output = attention_decoder([nnet, outp_true])
@@ -39,5 +39,5 @@ model.compile(
 model.summary()
 
 model.fit([x, np.squeeze(y, axis=-1)], y,
-          epochs=25,
+          epochs=5,
           validation_data=([x_val, np.squeeze(y_val, axis=-1)], y_val))
