@@ -1,3 +1,9 @@
+"""
+Toy example - reconstructs input sequence from itself
+Shows usage of teacher forcing in AttentionDecoder
+And PositionEmbedding
+"""
+
 from keras.layers import Input, Embedding, concatenate
 from keras.models import Model
 import numpy as np
@@ -23,14 +29,14 @@ embedded = Embedding(n_labels, n_labels, weights=[np.eye(n_labels)], trainable=F
 pos_emb = PositionEmbedding(max_time=1000, n_waves=20, d_model=40)(embedded)
 nnet = concatenate([embedded, pos_emb], axis=-1)
 
-attention_decoder = AttentionDecoder(20, n_labels,
+attention_decoder = AttentionDecoder(40, n_labels,
                                      embedding_dim=5,
                                      is_monotonic=False,
                                      normalize_energy=False)
 # use teacher forcing
-#output = attention_decoder([nnet, outp_true])
+output = attention_decoder([nnet, outp_true])
 # (alternative) without teacher forcing
-output = attention_decoder(nnet)
+# output = attention_decoder(nnet)
 model = Model(inputs=[inputs, outp_true], outputs=[output])
 model.compile(
     loss='sparse_categorical_crossentropy',
