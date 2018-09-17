@@ -303,20 +303,22 @@ class AttentionDecoder(Recurrent):
 
         self.built = True
 
-    def call(self, x, training=None):
+    def call(self, x, use_teacher_forcing=True, training=None):
         # TODO: check that model is loading from .h5 correctly
         # TODO: for now cannot be shared layer
         # (only can it we use (or not use) teacher forcing in all cases simultationsly)
+
+        # this sequence is used only to extract the amount of timesteps (the same as in output sequence)
+        fake_input = x
         if isinstance(x, list):
             # teacher forcing for training
             self.x_seq, self.y_true = x
-            self.use_teacher_forcing = True
+            self.use_teacher_forcing = use_teacher_forcing
+            fake_input = K.expand_dims(self.y_true)
         else:
             # inference
             self.x_seq = x
             self.use_teacher_forcing = False
-
-        self.curr_batch_timesteps = tf.shape(self.x_seq)[1]
 
         # apply a dense layer over the time dimension of the sequence
         # do it here because it doesn't depend on any previous steps
@@ -328,7 +330,12 @@ class AttentionDecoder(Recurrent):
                                              output_dim=self.units,
                                              training=training)
 
-        return super(AttentionDecoder, self).call(self.x_seq, training=training)
+        last_output, outputs, states = K.rnn(
+            self.step,
+            inputs=fake_input,
+            initial_states=self.get_initial_state(self.x_seq)
+        )
+        return outputs
 
     def get_initial_state(self, inputs):
         if isinstance(inputs, list):

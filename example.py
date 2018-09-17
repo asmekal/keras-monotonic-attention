@@ -37,6 +37,11 @@ attention_decoder = AttentionDecoder(40, n_labels,
 output = attention_decoder([nnet, outp_true])
 # (alternative) without teacher forcing
 # output = attention_decoder(nnet)
+# or
+# output = attention_decoder([nnet, outp_true], use_teacher_forcing=False)
+# the last variant is useful for generating outputs with number of timesteps different from input
+# (without it the length of the output sequence will be the same as input sequence)
+# so to produce outputs of different shape on inference the one could place outp_true=np.zeros(batch_size, outp_time)
 model = Model(inputs=[inputs, outp_true], outputs=[output])
 model.compile(
     loss='sparse_categorical_crossentropy',
