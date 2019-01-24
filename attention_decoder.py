@@ -4,6 +4,7 @@ import keras
 from keras import backend as K
 from keras import regularizers, constraints, initializers, activations
 from keras.layers.recurrent import Recurrent
+from keras.layers import Embedding
 from keras.engine import InputSpec
 
 
@@ -101,6 +102,7 @@ class AttentionDecoder(Recurrent):
         self.normalize_energy = normalize_energy
 
         self.embedding_dim = embedding_dim
+        self.embedding_sublayer = Embedding(alphabet_size + 1, embedding_dim)
         self.dropout = dropout
         self.recurrent_dropout = recurrent_dropout
 
@@ -164,9 +166,7 @@ class AttentionDecoder(Recurrent):
         """
             Embedding matrix for y (outputs)
         """
-        self.E_y = self.add_weight(shape=(self.alphabet_size + 1, self.embedding_dim),  # +1 for start token
-                                   name='E_y',
-                                   initializer='orthogonal')
+        self.embedding_sublayer.build(input_shape=(self.batch_size, self.input_dim))
 
         """
             Matrices for creating the context vector
@@ -371,7 +371,7 @@ class AttentionDecoder(Recurrent):
         else:
             ytm, stm, timestep = states
 
-        ytm = K.gather(self.E_y, K.cast(ytm, 'int32'))
+        ytm = self.embedding_sublayer(K.cast(ytm, 'int32'))
 
         if self.recurrent_dropout is not None and 0. < self.recurrent_dropout < 1.:
             stm = K.in_train_phase(K.dropout(stm, self.recurrent_dropout), stm)
@@ -503,4 +503,3 @@ class AttentionDecoder(Recurrent):
         }
         base_config = super(AttentionDecoder, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
-
